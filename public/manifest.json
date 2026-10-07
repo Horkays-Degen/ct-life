@@ -1,0 +1,22 @@
+{
+  "name": "CT Life - Survive the Timeline",
+  "short_name": "CT Life",
+  "description": "Live your Web3 story in the world of Crypto Twitter",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
