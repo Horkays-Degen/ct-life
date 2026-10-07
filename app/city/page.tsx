@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import GameHUD from '@/components/GameHUD';
+import BottomNav from '@/components/BottomNav';
 import { Character, CharacterStats } from '@/lib/types';
 
 export default function CityPage() {
@@ -78,61 +80,30 @@ export default function CityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      {/* Top HUD */}
-      <div className="bg-slate-800 border-b border-slate-700 px-4 py-3">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold text-white">CT LIFE</h1>
-            <div className="text-gray-400">|</div>
-            <div className="text-white">@{character.handle}</div>
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            <div className="text-sm">
-              <span className="text-gray-400">💰</span>
-              <span className="text-cyan-400 font-bold ml-1">
-                ₵{stats.ct_credits.toLocaleString()}
-              </span>
-            </div>
-            <div className="text-sm">
-              <span className="text-gray-400">⚡</span>
-              <span className="text-green-400 font-bold ml-1">
-                {stats.energy}
-              </span>
-            </div>
-            <div className="text-sm">
-              <span className="text-gray-400">👥</span>
-              <span className="text-purple-400 font-bold ml-1">
-                {stats.followers.toLocaleString()}
-              </span>
-            </div>
-            <div className="text-sm">
-              <span className="text-gray-400">⭐</span>
-              <span className="text-yellow-400 font-bold ml-1">
-                {stats.reputation}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-slate-900 pb-20 md:pb-0">
+      {/* Game HUD */}
+      <GameHUD 
+        stats={stats} 
+        handle={character.handle}
+        marketRegime="BULL MARKET"
+      />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-8">
-        <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
+        <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-6 md:p-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             🌆 WELCOME TO CT CITY
           </h2>
           <p className="text-gray-400 mb-6">
             You've entered the timeline as <strong className="text-purple-400">{character.display_name}</strong>
           </p>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="grid md:grid-cols-3 gap-4 md:gap-6 mb-8">
             <div className="bg-slate-900/50 rounded-lg p-6">
               <div className="text-3xl mb-2">📱</div>
               <h3 className="font-bold text-white mb-2">Timeline Plaza</h3>
-              <p className="text-sm text-gray-400">Post, reply, and build your following</p>
-              <button className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm">
+              <p className="text-sm text-gray-400 mb-4">Post, reply, and build your following</p>
+              <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors">
                 Coming Soon
               </button>
             </div>
@@ -140,8 +111,8 @@ export default function CityPage() {
             <div className="bg-slate-900/50 rounded-lg p-6">
               <div className="text-3xl mb-2">📊</div>
               <h3 className="font-bold text-white mb-2">Degen District</h3>
-              <p className="text-sm text-gray-400">Trade fictional tokens</p>
-              <button className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm">
+              <p className="text-sm text-gray-400 mb-4">Trade fictional tokens</p>
+              <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors">
                 Coming Soon
               </button>
             </div>
@@ -149,20 +120,17 @@ export default function CityPage() {
             <div className="bg-slate-900/50 rounded-lg p-6">
               <div className="text-3xl mb-2">🛠️</div>
               <h3 className="font-bold text-white mb-2">Builder Block</h3>
-              <p className="text-sm text-gray-400">Build products and find cofounders</p>
-              <button className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm">
+              <p className="text-sm text-gray-400 mb-4">Build products and find cofounders</p>
+              <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors">
                 Coming Soon
               </button>
             </div>
           </div>
 
           <div className="border-t border-slate-700 pt-6">
-            <p className="text-sm text-gray-500 mb-4">
-              CT Life is in active development. More features coming soon!
-            </p>
             <button
               onClick={handleSignOut}
-              className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm"
+              className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
             >
               Sign Out
             </button>
@@ -198,6 +166,9 @@ export default function CityPage() {
           )}
         </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 }
