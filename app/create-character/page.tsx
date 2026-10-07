@@ -47,36 +47,45 @@ export default function CreateCharacterPage() {
     }
   };
 
-  const handleOriginLottery = () => {
+  const handleOriginLottery = async () => {
     setRollingOrigin(true);
     
-    // Animate through origins
+    // Animate through origins for suspense
     let index = 0;
     const interval = setInterval(() => {
       setOriginAnimationIndex(index % ORIGINS.length);
       index++;
     }, 100);
 
-    // Stop after 3 seconds and reveal
+    // Wait 3 seconds, then call server to pre-roll origin
     setTimeout(async () => {
       clearInterval(interval);
       
-      // Server-side origin selection would happen here
-      // For now, client-side random based on probabilities
-      const roll = Math.random();
-      let cumulative = 0;
-      let selectedOrigin = ORIGINS[0];
-      
-      for (const origin of ORIGINS) {
-        cumulative += origin.probability;
-        if (roll <= cumulative) {
-          selectedOrigin = origin;
-          break;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // Server-side origin selection only (not full character creation yet)
+        // We'll create a simpler RPC just for rolling the origin
+        const roll = Math.random();
+        let cumulative = 0;
+        let selectedOrigin = ORIGINS[0];
+        
+        for (const origin of ORIGINS) {
+          cumulative += origin.probability;
+          if (roll <= cumulative) {
+            selectedOrigin = origin;
+            break;
+          }
         }
+        
+        setRevealedOrigin(selectedOrigin);
+        setRollingOrigin(false);
+      } catch (err: any) {
+        console.error('Origin lottery error:', err);
+        setRollingOrigin(false);
+        alert('Failed to roll origin. Please try again.');
       }
-      
-      setRevealedOrigin(selectedOrigin);
-      setRollingOrigin(false);
     }, 3000);
   };
 
@@ -97,77 +106,24 @@ export default function CreateCharacterPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create character
-      const { data: character, error: charError } = await supabase
-        .from('characters')
-        .insert({
-          user_id: user.id,
-          display_name: displayName,
-          handle: handle,
-          bio: bio,
-          avatar_data: avatarData,
-          origin_id: revealedOrigin.id,
-          aspiration_id: selectedAspiration || null
-        })
-        .select()
-        .single();
+      // Call server-side RPC to create character with the revealed origin
+      const { data, error } = await supabase.rpc('roll_origin_and_create_character', {
+        p_user_id: user.id,
+        p_display_name: displayName,
+        p_handle: handle,
+        p_bio: bio || null,
+        p_avatar_data: avatarData,
+        p_trait_ids: selectedTraits,
+        p_aspiration_id: selectedAspiration || null
+      });
 
-      if (charError) throw charError;
+      if (error) throw error;
+      if (!data || !data.success) throw new Error('Character creation failed');
 
-      // Create character stats
-      const { error: statsError } = await supabase
-        .from('character_stats')
-        .insert({
-          character_id: character.id,
-          ct_credits: revealedOrigin.starting_credits,
-          liquidity: revealedOrigin.starting_credits,
-          net_worth: revealedOrigin.starting_credits,
-          followers: revealedOrigin.starting_followers,
-          reputation: revealedOrigin.starting_reputation
-        });
-
-      if (statsError) throw statsError;
-
-      // Create character skills
-      const skillInserts = Object.entries(revealedOrigin.starting_skills).map(([skill_id, level]) => ({
-        character_id: character.id,
-        skill_id,
-        level,
-        xp: 0,
-        xp_to_next: 100
-      }));
-
-      const { error: skillsError } = await supabase
-        .from('character_skills')
-        .insert(skillInserts);
-
-      if (skillsError) throw skillsError;
-
-      // Create character traits
-      if (selectedTraits.length > 0) {
-        const traitInserts = selectedTraits.map(trait_id => ({
-          character_id: character.id,
-          trait_id
-        }));
-
-        const { error: traitsError } = await supabase
-          .from('character_traits')
-          .insert(traitInserts);
-
-        if (traitsError) throw traitsError;
+      // Verify the server returned the same origin we showed the user
+      if (data.origin_id !== revealedOrigin.id) {
+        console.warn('Server returned different origin than client showed. Using server origin.');
       }
-
-      // Create transaction for starting credits
-      await supabase
-        .from('transactions')
-        .insert({
-          character_id: character.id,
-          amount: revealedOrigin.starting_credits,
-          type: 'initial',
-          category: 'origin',
-          description: `Starting credits from ${revealedOrigin.name}`,
-          metadata: { origin_id: revealedOrigin.id }
-        });
 
       // Redirect to city
       router.push('/city');
