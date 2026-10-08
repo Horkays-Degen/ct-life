@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import VisualCharacter, { CharacterAvatar } from './VisualCharacter';
 
 interface District {
   id: string;
@@ -109,19 +110,121 @@ export default function CTCityMap({ onDistrictClick }: CTCityMapProps) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const mapRef = useRef<HTMLDivElement>(null);
 
-  // Floating NPCs
+  // Enhanced NPCs with actual characters
   const [npcs] = useState([
-    { id: 1, x: 100, y: 80, emoji: '🧑‍💻', direction: 1 },
-    { id: 2, x: 300, y: 150, emoji: '👨‍💼', direction: -1 },
-    { id: 3, x: 200, y: 200, emoji: '👩‍🎨', direction: 1 },
-    { id: 4, x: 400, y: 120, emoji: '🧑‍🚀', direction: -1 },
-    { id: 5, x: 150, y: 250, emoji: '👨‍🔬', direction: 1 },
+    { 
+      id: 1, 
+      x: 100, 
+      y: 80, 
+      avatar: {
+        skin_tone: '#F1C27D',
+        hair_style: 'short' as const,
+        hair_color: '#1F2937',
+        outfit: 'hoodie' as const,
+        accessories: ['headphones']
+      },
+      direction: 1,
+      speed: 0.5
+    },
+    { 
+      id: 2, 
+      x: 300, 
+      y: 150, 
+      avatar: {
+        skin_tone: '#FFDBAC',
+        hair_style: 'long' as const,
+        hair_color: '#F9E4B7',
+        outfit: 'tshirt' as const,
+        accessories: ['glasses']
+      },
+      direction: -1,
+      speed: 0.3
+    },
+    { 
+      id: 3, 
+      x: 200, 
+      y: 200, 
+      avatar: {
+        skin_tone: '#C68642',
+        hair_style: 'curly' as const,
+        hair_color: '#4A3F35',
+        outfit: 'casual' as const,
+        accessories: []
+      },
+      direction: 1,
+      speed: 0.4
+    },
+    { 
+      id: 4, 
+      x: 400, 
+      y: 120, 
+      avatar: {
+        skin_tone: '#E0AC69',
+        hair_style: 'ponytail' as const,
+        hair_color: '#EC4899',
+        outfit: 'suit' as const,
+        accessories: ['glasses']
+      },
+      direction: -1,
+      speed: 0.6
+    },
+    { 
+      id: 5, 
+      x: 150, 
+      y: 250, 
+      avatar: {
+        skin_tone: '#8D5524',
+        hair_style: 'bald' as const,
+        hair_color: '#1F2937',
+        outfit: 'hoodie' as const,
+        accessories: ['hat']
+      },
+      direction: 1,
+      speed: 0.35
+    },
+    { 
+      id: 6, 
+      x: 320, 
+      y: 280, 
+      avatar: {
+        skin_tone: '#FFDBAC',
+        hair_style: 'short' as const,
+        hair_color: '#3B82F6',
+        outfit: 'tshirt' as const,
+        accessories: ['headphones']
+      },
+      direction: -1,
+      speed: 0.45
+    },
+    { 
+      id: 7, 
+      x: 450, 
+      y: 160, 
+      avatar: {
+        skin_tone: '#5C3317',
+        hair_style: 'long' as const,
+        hair_color: '#8B5CF6',
+        outfit: 'casual' as const,
+        accessories: []
+      },
+      direction: 1,
+      speed: 0.55
+    }
   ]);
 
   const [tickers] = useState([
-    { text: '$FROGGO +24%', color: '#10b981', x: 100 },
-    { text: '$COPE -12%', color: '#ef4444', x: 300 },
-    { text: '$YAP +5%', color: '#10b981', x: 500 },
+    { text: '$FROGGO +24%', color: '#10b981', x: 100, speed: 1 },
+    { text: '$COPE -12%', color: '#ef4444', x: 300, speed: 1.2 },
+    { text: '$YAP +5%', color: '#10b981', x: 500, speed: 0.8 },
+    { text: '$BAGS +18%', color: '#10b981', x: 700, speed: 1.1 },
+    { text: '$QUANTUM -8%', color: '#ef4444', x: 900, speed: 0.9 },
+  ]);
+
+  // Moving cars
+  const [cars] = useState([
+    { id: 1, x: 50, y: 180, direction: 1, color: '#3B82F6', speed: 2 },
+    { id: 2, x: 400, y: 250, direction: -1, color: '#EC4899', speed: 1.8 },
+    { id: 3, x: 200, y: 320, direction: 1, color: '#10B981', speed: 2.2 },
   ]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -167,19 +270,48 @@ export default function CTCityMap({ onDistrictClick }: CTCityMapProps) {
         }} />
       </div>
 
-      {/* Floating tickers */}
-      <div className="absolute top-4 left-0 right-0 flex gap-8 overflow-hidden pointer-events-none">
-        {tickers.map((ticker, idx) => (
+      {/* Floating tickers - Enhanced */}
+      <div className="absolute top-4 left-0 right-0 overflow-hidden pointer-events-none">
+        <div className="flex gap-8">
+          {tickers.map((ticker, idx) => (
+            <motion.div
+              key={idx}
+              className="text-sm font-bold whitespace-nowrap px-3 py-1 rounded-full border"
+              style={{ 
+                color: ticker.color,
+                backgroundColor: `${ticker.color}22`,
+                borderColor: `${ticker.color}66`
+              }}
+              initial={{ x: ticker.x }}
+              animate={{ x: [ticker.x, ticker.x + 1000] }}
+              transition={{ duration: 20 / ticker.speed, repeat: Infinity, ease: 'linear' }}
+            >
+              {ticker.text}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Floating particles/effects */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(8)].map((_, i) => (
           <motion.div
-            key={idx}
-            className="text-sm font-bold whitespace-nowrap"
-            style={{ color: ticker.color }}
-            initial={{ x: ticker.x }}
-            animate={{ x: [ticker.x, ticker.x + 400] }}
-            transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-          >
-            {ticker.text}
-          </motion.div>
+            key={i}
+            className="absolute w-1 h-1 bg-purple-400 rounded-full opacity-30"
+            style={{
+              left: `${10 + i * 12}%`,
+              top: `${20 + (i % 3) * 20}%`
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.1, 0.4, 0.1]
+            }}
+            transition={{
+              duration: 3 + i * 0.5,
+              repeat: Infinity,
+              delay: i * 0.3
+            }}
+          />
         ))}
       </div>
 
@@ -263,6 +395,19 @@ export default function CTCityMap({ onDistrictClick }: CTCityMapProps) {
                       />
                     ))}
                   </div>
+
+                  {/* Rooftop Antenna/Details */}
+                  {!district.locked && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <motion.div
+                        className="w-1 h-6 bg-red-500"
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-400 rounded-full" />
+                      </motion.div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Building Roof (Isometric Top) */}
@@ -312,25 +457,111 @@ export default function CTCityMap({ onDistrictClick }: CTCityMapProps) {
             </motion.div>
           ))}
 
-          {/* Floating NPCs */}
+          {/* Floating NPCs - Actual Characters */}
           {npcs.map((npc) => (
             <motion.div
               key={npc.id}
-              className="absolute text-3xl pointer-events-none"
-              style={{ left: npc.x, top: npc.y }}
+              className="absolute pointer-events-none"
+              style={{ left: npc.x, top: npc.y, zIndex: 5 }}
               animate={{
-                x: [0, npc.direction * 30, 0],
-                y: [0, -5, 0]
-              }}
-              transition={{
-                duration: 4 + npc.id,
-                repeat: Infinity,
-                ease: 'easeInOut'
+                x: [0, npc.direction * 40 * npc.speed, 0],
+                transition: { duration: 5 / npc.speed, repeat: Infinity, ease: 'linear' }
               }}
             >
-              {npc.emoji}
+              <VisualCharacter 
+                avatar={npc.avatar}
+                size="small"
+                animation="walking"
+              />
             </motion.div>
           ))}
+
+          {/* Moving Cars */}
+          {cars.map((car) => (
+            <motion.div
+              key={car.id}
+              className="absolute pointer-events-none"
+              style={{ left: car.x, top: car.y, zIndex: 3 }}
+              animate={{
+                x: car.direction === 1 ? [0, 600] : [600, 0],
+                transition: { duration: 15 / car.speed, repeat: Infinity, ease: 'linear' }
+              }}
+            >
+              {/* Simple car SVG */}
+              <svg width="40" height="20" viewBox="0 0 40 20">
+                {/* Car body */}
+                <rect x="5" y="8" width="30" height="10" rx="2" fill={car.color} />
+                {/* Car top */}
+                <path d="M 12 8 L 15 3 L 25 3 L 28 8 Z" fill={car.color} opacity="0.8" />
+                {/* Windows */}
+                <rect x="16" y="4" width="8" height="3" fill="#60A5FA" opacity="0.6" />
+                {/* Wheels */}
+                <circle cx="13" cy="18" r="3" fill="#1F2937" />
+                <circle cx="27" cy="18" r="3" fill="#1F2937" />
+                {/* Wheel details */}
+                <circle cx="13" cy="18" r="1.5" fill="#475569" />
+                <circle cx="27" cy="18" r="1.5" fill="#475569" />
+                {/* Headlights */}
+                {car.direction === 1 && (
+                  <circle cx="35" cy="13" r="1.5" fill="#FCD34D" opacity="0.8" />
+                )}
+                {car.direction === -1 && (
+                  <circle cx="5" cy="13" r="1.5" fill="#FCD34D" opacity="0.8" />
+                )}
+              </svg>
+            </motion.div>
+          ))}
+
+          {/* Animated Billboards on Buildings */}
+          <motion.div
+            className="absolute top-[15%] left-[25%] bg-slate-900/80 border border-purple-500 rounded p-2 text-xs text-purple-300 font-bold pointer-events-none"
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            🚀 TO THE MOON
+          </motion.div>
+
+          <motion.div
+            className="absolute top-[40%] right-[10%] bg-slate-900/80 border border-green-500 rounded p-2 text-xs text-green-300 font-bold pointer-events-none"
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            ✅ VERIFIED
+          </motion.div>
+
+          <motion.div
+            className="absolute bottom-[45%] left-[15%] bg-slate-900/80 border border-cyan-500 rounded p-2 text-xs text-cyan-300 font-bold pointer-events-none"
+            animate={{ 
+              scale: [1, 1.1, 1],
+              opacity: [0.8, 1, 0.8]
+            }}
+            transition={{ duration: 2.5, repeat: Infinity }}
+          >
+            💎 WAGMI
+          </motion.div>
+
+          {/* Street Lamps */}
+          <div className="absolute bottom-[30%] left-[20%] pointer-events-none">
+            <div className="w-1 h-16 bg-slate-700" />
+            <motion.div 
+              className="w-6 h-6 bg-yellow-300 rounded-full -mt-2 -ml-2.5"
+              animate={{ opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <div className="absolute inset-0 bg-yellow-300 rounded-full blur-md" />
+            </motion.div>
+          </div>
+
+          <div className="absolute bottom-[30%] right-[25%] pointer-events-none">
+            <div className="w-1 h-16 bg-slate-700" />
+            <motion.div 
+              className="w-6 h-6 bg-yellow-300 rounded-full -mt-2 -ml-2.5"
+              animate={{ opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 2.3, repeat: Infinity, delay: 0.5 }}
+            >
+              <div className="absolute inset-0 bg-yellow-300 rounded-full blur-md" />
+            </motion.div>
+          </div>
 
           {/* Floating text bubbles */}
           <motion.div
