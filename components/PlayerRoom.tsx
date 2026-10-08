@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import VisualCharacter, { CharacterAvatar } from './VisualCharacter';
 
 interface InteractiveObject {
   id: string;
@@ -14,10 +15,11 @@ interface InteractiveObject {
 
 interface PlayerRoomProps {
   characterName: string;
+  avatar: CharacterAvatar;
   onAction: (action: string) => void;
 }
 
-export default function PlayerRoom({ characterName, onAction }: PlayerRoomProps) {
+export default function PlayerRoom({ characterName, avatar, onAction }: PlayerRoomProps) {
   const [hoveredObject, setHoveredObject] = useState<string | null>(null);
   const [timeOfDay] = useState<'morning' | 'afternoon' | 'evening' | 'night'>('afternoon');
 
@@ -275,17 +277,14 @@ export default function PlayerRoom({ characterName, onAction }: PlayerRoomProps)
           </div>
         </div>
 
-        {/* Character placeholder - will be replaced with actual character */}
-        <motion.div
-          className="absolute bottom-[32%] left-[45%] text-6xl pointer-events-none"
-          animate={{ 
-            y: [0, -3, 0],
-            rotate: [0, 2, -2, 0]
-          }}
-          transition={{ duration: 4, repeat: Infinity }}
-        >
-          🧑‍💻
-        </motion.div>
+        {/* Character - actual visual character */}
+        <div className="absolute bottom-[32%] left-[45%] pointer-events-none">
+          <VisualCharacter 
+            avatar={avatar}
+            size="large"
+            animation="idle"
+          />
+        </div>
       </div>
 
       {/* Hover Info */}

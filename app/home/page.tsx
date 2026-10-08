@@ -6,13 +6,16 @@ import { supabase } from '@/lib/supabase';
 import GameHUD from '@/components/GameHUD';
 import BottomNav from '@/components/BottomNav';
 import PlayerRoom from '@/components/PlayerRoom';
+import CharacterCustomizer from '@/components/CharacterCustomizer';
 import { Character, CharacterStats } from '@/lib/types';
+import { CharacterAvatar } from '@/components/VisualCharacter';
 
 export default function HomePage() {
   const router = useRouter();
   const [character, setCharacter] = useState<Character | null>(null);
   const [stats, setStats] = useState<CharacterStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCustomizer, setShowCustomizer] = useState(false);
 
   useEffect(() => {
     loadCharacter();
@@ -68,11 +71,30 @@ export default function HomePage() {
         }
         break;
       case 'wardrobe':
-        alert('Character customization coming soon!');
+        setShowCustomizer(true);
         break;
       case 'window':
         router.push('/city');
         break;
+    }
+  };
+
+  const handleSaveAvatar = async (newAvatar: CharacterAvatar) => {
+    if (!character) return;
+    
+    try {
+      const { error } = await supabase
+        .from('characters')
+        .update({ avatar_data: newAvatar })
+        .eq('id', character.id);
+
+      if (error) throw error;
+
+      setCharacter({ ...character, avatar_data: newAvatar });
+      setShowCustomizer(false);
+    } catch (err) {
+      console.error('Error saving avatar:', err);
+      alert('Failed to save character');
     }
   };
 
@@ -92,9 +114,19 @@ export default function HomePage() {
       <div className="flex-1 relative">
         <PlayerRoom 
           characterName={character.display_name}
+          avatar={character.avatar_data as CharacterAvatar}
           onAction={handleRoomAction}
         />
       </div>
+
+      {/* Character Customizer Modal */}
+      {showCustomizer && (
+        <CharacterCustomizer
+          initialAvatar={character.avatar_data as CharacterAvatar}
+          onSave={handleSaveAvatar}
+          onCancel={() => setShowCustomizer(false)}
+        />
+      )}
 
       <BottomNav />
     </div>
